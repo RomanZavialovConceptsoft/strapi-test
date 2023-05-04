@@ -26,4 +26,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
           AWS_LAMBDA_FUNCTION_NAME: "strapi-sf"
-        run: npx serverless deploy --stage production
+        run: serverless deploy
