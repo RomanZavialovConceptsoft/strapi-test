@@ -1,11 +1,11 @@
-service: strapi-4-serverless-guide
+service: strapi-sf
 
 frameworkVersion: "3"
 
 provider:
   name: aws
   runtime: nodejs18.x
-  region: eu-central-1 
+  region: eu-central-1
   logRetentionInDays: 1
   versionFunctions: false
 
