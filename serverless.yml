@@ -4,8 +4,8 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: nodejs18.x
-  region: eu-central-1
+  runtime: nodejs16.x
+  region: us-east-1
   logRetentionInDays: 1
   versionFunctions: false
 
