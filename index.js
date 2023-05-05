@@ -1,3 +1,3 @@
 import {handler} from 'src/handlers/index';
 
-module.exports = { handler }
+module.exports.handler = handler;
