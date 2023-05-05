@@ -1,5 +1,10 @@
 'use strict';
 
+const serverless = require('serverless-http');
+const strapi = require('strapi');
+
+strapi().start();
+
 module.exports = {
   /**
    * An asynchronous register function that runs before
@@ -17,4 +22,5 @@ module.exports = {
    * run jobs, or perform some special logic.
    */
   bootstrap(/*{ strapi }*/) {},
+  handler: serverless(strapi.app)
 };
