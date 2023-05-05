@@ -8,7 +8,7 @@ Resources:
   website:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: app/index.handler
+      Handler: src/handlers/get-all-items.getAllItemsHandler
       Runtime: nodejs18.x
       CodeUri: .
       Description: A starter AWS Lambda function.
