@@ -82,7 +82,7 @@ jobs:
 
           DATE=`date '+%Y%m%d%H%M%S'`
           rm -f ../${AWS_LAMBDA_NAME}.zip
-          zip -r ../${AWS_LAMBDA_NAME}.zip ./*
+          zip -r ../${AWS_LAMBDA_NAME}.zip ./* -x node_modules/\*
 
           cd ../
 
