@@ -1,18 +1,16 @@
-'use strict';
+const https = require("https");
+let url = "https://aws.amazon.com/";
 
-export default async (event) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify(
-      {
-        message: 'Go Serverless v1.0! Your function executed',
-        input: event,
-      },
-      null,
-      2
-    ),
-  };
-
-// Use this code if you don't use the http event with the LAMBDA-PROXY integration
-// return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
+exports.handler = async function (event) {
+  let statusCode;
+  await new Promise(function (resolve, reject) {
+    https.get(url, (res) => {
+      statusCode = res.statusCode;
+      resolve(statusCode);
+    }).on("error", (e) => {
+      reject(Error(e));
+    });
+  });
+  console.log(statusCode);
+  return statusCode;
 };
