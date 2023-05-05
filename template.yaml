@@ -1,31 +1,34 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
-Description: Strapi-test
+Description: Website
+Parameters:
+  IdentityNameParameter:
+    Type: String
 Resources:
-  strapi-sf:
+  website:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/index.handler
+      Handler: app/index.handler
       Runtime: nodejs18.x
-      Architectures:
-        - x86_64
+      CodeUri: .
       Description: A starter AWS Lambda function.
       MemorySize: 128
-      Timeout: 100
-      CodeUri: .
+      Timeout: 3
       Policies:
-        # Give Lambda basic execution Permission to the helloFromLambda
-        - AWSLambdaBasicExecutionRole
-      ApplicationResourceGroup:
-        Type: AWS::ResourceGroups::Group
-        Properties:
-          Name:
-            Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
-          ResourceQuery:
-            Type: CLOUDFORMATION_STACK_1_0
-      ApplicationInsightsMonitoring:
-        Type: AWS::ApplicationInsights::Application
-        Properties:
-          ResourceGroupName:
-            Ref: ApplicationResourceGroup
-          AutoConfigurationEnabled: 'true'
+        - SESSendBouncePolicy:
+            IdentityName: !Ref IdentityNameParameter
+      Environment:
+        Variables:
+          BUCKET: value
+      Events:
+        ## TODO: How to define optional parameter so we only get one route?
+        ApiEventRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+        ApiEventParam:
+          Type: Api
+          Properties:
+            Path: /{route}
+            Method: get
