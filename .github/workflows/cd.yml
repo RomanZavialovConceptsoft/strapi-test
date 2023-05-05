@@ -1,0 +1,91 @@
+on:
+  push:
+    branches: [development]
+
+name: Deploy to testing Lambda
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the current branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        id: branch
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - name: Which Keys
+        id: which-keys
+        env:
+          BRANCH_NAME: ${{ env.branch }}
+        run:
+          echo ${BRANCH_NAME}
+
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+
+          echo "infrastucture=prod" >> $GITHUB_ENV
+
+          echo "AWS_LAMBDA_BUCKET=${{secrets.AWS_ACCOUNT_ID}}-lambda-deploy-${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        env:
+          INFRASTRUCTURE: ${{ env.infrastucture }}
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install for build
+        id: npm-install-for-build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm install
+
+      - name: NPM Build
+        id: npm-build
+        run: npm run build
+
+      - name: NPM сlear
+        id: npm-clear
+        run: rm -rf node_modules
+
+      - name: NPM Install
+        id: npm-install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm install --omit=dev --ignore-script
+
+      - name: Package and Deploy to Lambda Environment
+        id: deploy-to-lambda
+        env:
+          BRANCH_NAME: ${{ env.branch }}
+          AWS_LAMBDA_NAME: strapi-sf
+          AWS_LAMBDA_BUCKET: strapi-bucket-202305
+          AWS_REGION: ${{ env.AWS_REGION }}
+        run: |
+
+          DATE=`date '+%Y%m%d%H%M%S'`
+          rm -f ../${AWS_LAMBDA_NAME}.zip
+          zip -r ../${AWS_LAMBDA_NAME}.zip ./*
+
+          cd ../
+
+          aws s3 cp ${AWS_LAMBDA_NAME}.zip s3://${AWS_LAMBDA_BUCKET}/${AWS_LAMBDA_NAME}/${AWS_LAMBDA_NAME}-$DATE.zip --storage-class=REDUCED_REDUNDANCY --sse
+          aws --region ${AWS_REGION} lambda update-function-code --function-name ${AWS_LAMBDA_NAME} --s3-bucket ${AWS_LAMBDA_BUCKET} --s3-key ${AWS_LAMBDA_NAME}/${AWS_LAMBDA_NAME}-$DATE.zip > /dev/null
+          rm -f ${AWS_LAMBDA_NAME}.zip
