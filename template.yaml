@@ -5,7 +5,7 @@ Resources:
   strapi-sf:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/app.handler
+      Handler: src/index.getAllItemsHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
